@@ -131,6 +131,8 @@ enum RingRenderer {
 
         let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
             guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
+            // Resolve the ink here, in the menu bar's appearance; `attrs` above is only for measuring.
+            let attrs = labelAttributes(size: m.fontSize)
             var x: CGFloat = 0
             for (i, item) in items.enumerated() {
                 // Stacked: first item on top. Side by side: first on the left.
