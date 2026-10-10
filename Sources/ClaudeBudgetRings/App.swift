@@ -12,10 +12,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var panel: StatusPanel!
     private var cancellables: Set<AnyCancellable> = []
+    private var appearanceObservation: NSKeyValueObservation?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
-
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.imagePosition = .imageOnly
         panel = StatusPanel(statusItem: statusItem) { PanelView(controller: controller, credits: credits) }
@@ -35,6 +34,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.updateIcon() }
             .store(in: &cancellables)
+        // The bars are drawn in menu bar ink, so redraw them when the menu bar turns light or dark.
+        appearanceObservation = statusItem.button?.observe(\.effectiveAppearance) { [weak self] _, _ in
+            MainActor.assumeIsolated { self?.updateIcon() }
+        }
 
         controller.start()
         credits.start()
@@ -67,7 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 @main
 enum Main {
-    static func main() {
+    @MainActor static func main() {
         let args = CommandLine.arguments
         if args.contains("--probe") {
             Probe.run(raw: args.contains("--raw"))
@@ -79,6 +82,7 @@ enum Main {
             let app = NSApplication.shared
             let delegate = AppDelegate()
             app.delegate = delegate
+            app.setActivationPolicy(.accessory)
             app.run()
         }
     }

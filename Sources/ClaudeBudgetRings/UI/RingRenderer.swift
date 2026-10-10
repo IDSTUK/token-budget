@@ -3,8 +3,9 @@ import AppKit
 /// Draws the budget gauges: rings in the popover, bars in the menu bar.
 ///
 /// Rendered through `NSImage(size:flipped:drawingHandler:)`, so the handler
-/// runs at draw time in the destination's appearance: `labelColor` resolves
-/// correctly for a light or dark menu bar without us tracking it.
+/// runs at draw time in the destination's appearance. The rings use
+/// `labelColor`; the menu bar bars use `Chrome.menuBarInk`, which matches the
+/// template icons beside them (the menu bar resolves `labelColor` to grey).
 enum RingRenderer {
     struct Style {
         var lineWidth: CGFloat
@@ -152,7 +153,7 @@ enum RingRenderer {
     }
 
     private static func labelAttributes(size: CGFloat) -> [NSAttributedString.Key: Any] {
-        [.font: NSFont.monospacedDigitSystemFont(ofSize: size, weight: .bold), .foregroundColor: NSColor.labelColor]
+        [.font: NSFont.monospacedDigitSystemFont(ofSize: size, weight: .bold), .foregroundColor: Chrome.menuBarInk()]
     }
 
     /// Bold text hugging its bar, centred on the row.
@@ -169,7 +170,7 @@ enum RingRenderer {
     static func drawBar(in ctx: CGContext, rect: CGRect, pace: Pace?, stale: Bool, tickWidth: CGFloat) {
         // Barely rounded: square ends read more precisely than a capsule.
         let radius = min(1, rect.height / 2)
-        ctx.setFillColor(NSColor.labelColor.withAlphaComponent(pace == nil ? 0.35 : 0.22).cgColor)
+        ctx.setFillColor(Chrome.menuBarInk(opacity: pace == nil ? 0.35 : 0.22).cgColor)
         ctx.addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil))
         ctx.fillPath()
 
@@ -178,7 +179,7 @@ enum RingRenderer {
         let used = min(max(pace.utilization / 100, 0), 1)
         if used > 0.001 {
             let colour = stale
-                ? NSColor.labelColor.withAlphaComponent(0.4)
+                ? Chrome.menuBarInk(opacity: 0.4)
                 : PaceColor.nsColor(delta: pace.delta)
             ctx.setFillColor(colour.cgColor)
             // Never narrower than a sliver, so a few percent still shows.
@@ -200,7 +201,7 @@ enum RingRenderer {
         ctx.fill(tick.insetBy(dx: -1, dy: 0))
         ctx.restoreGState()
 
-        ctx.setFillColor(NSColor.labelColor.cgColor)
+        ctx.setFillColor(Chrome.menuBarInk().cgColor)
         ctx.addPath(CGPath(roundedRect: tick, cornerWidth: tickWidth / 2, cornerHeight: tickWidth / 2, transform: nil))
         ctx.fillPath()
     }

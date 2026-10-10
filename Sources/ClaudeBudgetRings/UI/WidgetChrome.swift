@@ -30,6 +30,18 @@ enum Chrome {
         return image
     }
 
+    /// Ink for the monochrome parts of a menu bar image that has colour in it, and so can't be
+    /// a template: black or white at 85%, which matches the template icons beside it. Pass a
+    /// lower opacity for faint parts such as bar tracks. Call it inside the image's drawing
+    /// handler, where the current appearance is the menu bar's, and redraw the image when the
+    /// button's `effectiveAppearance` changes. Don't use `labelColor` here: the menu bar
+    /// resolves it to about 70%, which looks grey. Draw monochrome templates in opaque black;
+    /// the menu bar lightens anything less.
+    static func menuBarInk(opacity: CGFloat = 0.85) -> NSColor {
+        let dark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        return (dark ? NSColor.white : .black).withAlphaComponent(opacity)
+    }
+
     static var appName: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? ProcessInfo.processInfo.processName

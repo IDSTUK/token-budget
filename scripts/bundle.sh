@@ -45,6 +45,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.developer-tools</string>
   <key>LSUIElement</key><true/>
+  <key>NSHighResolutionCapable</key><true/>
   <key>NSHumanReadableCopyright</key><string>© $(date +%Y) IDST UK</string>
 </dict>
 </plist>
